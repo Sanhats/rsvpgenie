@@ -15,13 +15,13 @@ const Index = () => {
               className="text-primary-600 hover:text-primary-700"
               onClick={() => navigate("/login")}
             >
-              Login
+              Iniciar Sesión
             </Button>
             <Button
               className="bg-primary-600 hover:bg-primary-700 text-white"
               onClick={() => navigate("/register")}
             >
-              Get Started
+              Crear Cuenta
             </Button>
           </div>
         </nav>
@@ -29,11 +29,11 @@ const Index = () => {
         <main className="py-20">
           <div className="max-w-3xl mx-auto text-center animate-fadeIn">
             <h1 className="text-5xl font-bold text-gray-900 mb-6">
-              Create Beautiful Digital Invitations
+              Crea Invitaciones Digitales Hermosas
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-              Design and share stunning digital invitations for any occasion. Track RSVPs
-              and manage your guest list effortlessly.
+              Diseña y comparte invitaciones digitales para cualquier ocasión. 
+              Gestiona las confirmaciones de asistencia sin complicaciones.
             </p>
             <div className="space-x-4">
               <Button
@@ -41,7 +41,7 @@ const Index = () => {
                 className="bg-primary-600 hover:bg-primary-700 text-white animate-slideUp"
                 onClick={() => navigate("/register")}
               >
-                Create Your First Invitation
+                Crear Mi Primera Invitación
               </Button>
               <Button
                 size="lg"
@@ -49,25 +49,25 @@ const Index = () => {
                 className="border-primary-600 text-primary-600 hover:bg-primary-50 animate-slideUp"
                 onClick={() => navigate("/templates")}
               >
-                View Templates
+                Ver Plantillas
               </Button>
             </div>
           </div>
 
           <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
             <FeatureCard
-              title="Easy to Create"
-              description="Design your invitation in minutes with our intuitive editor"
+              title="Fácil de Crear"
+              description="Diseña tu invitación en minutos con nuestro editor intuitivo"
               icon="✨"
             />
             <FeatureCard
-              title="Track RSVPs"
-              description="Manage your guest list and track responses in real-time"
+              title="Gestión de RSVPs"
+              description="Administra tu lista de invitados y rastrea confirmaciones en tiempo real"
               icon="📝"
             />
             <FeatureCard
-              title="Share Instantly"
-              description="Share your invitation via WhatsApp, email, or custom link"
+              title="Comparte al Instante"
+              description="Comparte tu invitación por WhatsApp, email o link personalizado"
               icon="🚀"
             />
           </div>
