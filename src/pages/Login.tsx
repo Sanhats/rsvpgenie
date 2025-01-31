@@ -1,22 +1,60 @@
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const Login = () => {
-  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { signIn } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await signIn(email, password);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-primary-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-6">Welcome Back</h1>
-        <p className="text-center text-gray-600 mb-8">
-          Please connect Supabase to enable authentication
+        <h1 className="text-2xl font-bold text-center mb-6">Iniciar Sesión</h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Correo Electrónico
+            </label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="tu@email.com"
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              Contraseña
+            </label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+            />
+          </div>
+          <Button type="submit" className="w-full bg-primary-600 hover:bg-primary-700 text-white">
+            Iniciar Sesión
+          </Button>
+        </form>
+        <p className="mt-4 text-center text-sm text-gray-600">
+          ¿No tienes una cuenta?{" "}
+          <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
+            Regístrate aquí
+          </Link>
         </p>
-        <Button
-          className="w-full bg-primary-600 hover:bg-primary-700 text-white mb-4"
-          onClick={() => navigate("/")}
-        >
-          Return Home
-        </Button>
       </div>
     </div>
   );
