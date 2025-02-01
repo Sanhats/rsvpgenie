@@ -1,58 +1,68 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
-import { useQuery } from "@tanstack/react-query";
-import { PlusCircle } from "lucide-react";
-import { InvitationCard } from "@/components/InvitationCard";
+import { useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
+import { supabase } from "@/integrations/supabase/client"
+import type { Tables } from "@/integrations/supabase/types"
+import { useQuery } from "@tanstack/react-query"
+import { PlusCircle } from "lucide-react"
+import { InvitationCard } from "@/components/InvitationCard"
 
-type Invitation = Tables<"invitations">;
+type Invitation = Tables<"invitations">
+
+const fetchInvitations = async (): Promise<Invitation[]> => {
+  const { data, error } = await supabase.from("invitations").select("*").order("created_at", { ascending: false })
+
+  if (error) {
+    throw error
+  }
+
+  return data as Invitation[]
+}
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const navigate = useNavigate()
+  const { toast } = useToast()
 
   // Check authentication status
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
       if (!session) {
-        navigate("/login");
+        navigate("/login")
       }
-    };
-    checkAuth();
-  }, [navigate]);
+    }
+    checkAuth()
+  }, [navigate])
 
   // Fetch invitations
-  const { data: invitations, isLoading } = useQuery({
+  const {
+    data: invitations,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["invitations"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("invitations")
-        .select("*")
-        .order("created_at", { ascending: false });
+    queryFn: fetchInvitations,
+  })
 
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Could not load invitations",
-          variant: "destructive",
-        });
-        throw error;
-      }
-
-      return data as Invitation[];
-    },
-  });
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Could not load invitations",
+        variant: "destructive",
+      })
+    }
+  }, [error, toast])
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-primary-50 flex items-center justify-center">
         <div className="text-lg text-gray-600">Loading your invitations...</div>
       </div>
-    );
+    )
   }
 
   return (
@@ -60,10 +70,7 @@ const Dashboard = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">My Invitations</h1>
-          <Button
-            onClick={() => navigate("/templates")}
-            className="bg-primary hover:bg-primary/90 text-white"
-          >
+          <Button onClick={() => navigate("/templates")} className="bg-primary hover:bg-primary/90 text-white">
             <PlusCircle className="mr-2 h-5 w-5" />
             Create New Invitation
           </Button>
@@ -92,7 +99,8 @@ const Dashboard = () => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Dashboard;
+export default Dashboard
+
