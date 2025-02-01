@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-primary-50">
@@ -10,19 +12,30 @@ const Index = () => {
         <nav className="py-6 flex justify-between items-center">
           <div className="text-2xl font-bold text-primary-600">invita.me</div>
           <div className="space-x-4">
-            <Button
-              variant="ghost"
-              className="text-primary-600 hover:text-primary-700"
-              onClick={() => navigate("/login")}
-            >
-              Iniciar Sesión
-            </Button>
-            <Button
-              className="bg-primary-600 hover:bg-primary-700 text-white"
-              onClick={() => navigate("/register")}
-            >
-              Crear Cuenta
-            </Button>
+            {user ? (
+              <Button
+                className="bg-primary-600 hover:bg-primary-700 text-white"
+                onClick={() => navigate("/dashboard")}
+              >
+                Mi Dashboard
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  className="text-primary-600 hover:text-primary-700"
+                  onClick={() => navigate("/login")}
+                >
+                  Iniciar Sesión
+                </Button>
+                <Button
+                  className="bg-primary-600 hover:bg-primary-700 text-white"
+                  onClick={() => navigate("/register")}
+                >
+                  Crear Cuenta
+                </Button>
+              </>
+            )}
           </div>
         </nav>
 
@@ -39,9 +52,9 @@ const Index = () => {
               <Button
                 size="lg"
                 className="bg-primary-600 hover:bg-primary-700 text-white animate-slideUp"
-                onClick={() => navigate("/register")}
+                onClick={() => navigate(user ? "/create-invitation" : "/register")}
               >
-                Crear Mi Primera Invitación
+                {user ? "Crear Nueva Invitación" : "Crear Mi Primera Invitación"}
               </Button>
               <Button
                 size="lg"
