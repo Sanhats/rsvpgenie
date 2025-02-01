@@ -33,6 +33,8 @@ const formSchema = z.object({
   template_id: z.string().optional(),
 });
 
+type FormData = z.infer<typeof formSchema>;
+
 const templates = [
   { id: "elegant", name: "Elegante", description: "Diseño clásico y sofisticado" },
   { id: "modern", name: "Moderno", description: "Estilo contemporáneo y minimalista" },
@@ -42,7 +44,7 @@ const templates = [
 export function InvitationForm() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
@@ -53,11 +55,21 @@ export function InvitationForm() {
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (formData: FormData) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error("No user found");
+      }
+
       const { error } = await supabase.from("invitations").insert({
-        ...data,
-        user_id: (await supabase.auth.getUser()).data.user?.id,
+        title: formData.title,
+        description: formData.description,
+        event_date: formData.event_date,
+        location: formData.location,
+        template_id: formData.template_id,
+        user_id: user.id,
       });
 
       if (error) throw error;
