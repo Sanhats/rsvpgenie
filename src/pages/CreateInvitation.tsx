@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
@@ -11,28 +11,33 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { useAuth } from "@/contexts/AuthContext"
 
 const formSchema = z.object({
-  title: z.string().min(1, "Title is required").max(100, "Title is too long"),
-  description: z.string().max(500, "Description is too long").optional(),
-  event_date: z.string().min(1, "Event date is required"),
-  location: z.string().min(1, "Location is required"),
-  template_id: z.string().min(1, "Template selection is required"),
+  title: z.string().min(1, "El título es requerido").max(100, "El título es muy largo"),
+  description: z.string().optional(),
+  event_date: z.string().min(1, "La fecha es requerida"),
+  location: z.string().min(1, "La ubicación es requerida"),
+  template_id: z.string().min(1, "Selecciona una plantilla"),
 })
 
+type FormData = z.infer<typeof formSchema>
+
 const templates = [
-  { id: "template1", name: "Basic Template" },
-  { id: "template2", name: "Elegant Template" },
-  { id: "template3", name: "Fun Template" },
+  { id: "template1", name: "Plantilla Básica" },
+  { id: "template2", name: "Plantilla Elegante" },
+  { id: "template3", name: "Plantilla Divertida" },
 ]
 
-const CreateInvitation = () => {
+export default function CreateInvitation() {
   const navigate = useNavigate()
   const { toast } = useToast()
-  const [isLoading, setIsLoading] = useState(false)
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
@@ -43,87 +48,108 @@ const CreateInvitation = () => {
     },
   })
 
-  const createInvitationMutation = useMutation({
-    mutationFn: async (values: z.infer<typeof formSchema>) => {
-      const { data: userData, error: userError } = await supabase.auth.getUser()
-      if (userError) throw userError
+  const createInvitation = useMutation({
+    mutationFn: async (data: FormData) => {
+      if (!user) throw new Error("No hay usuario autenticado")
 
-      const { data, error } = await supabase
+      // Crear un slug único basado en el título y timestamp
+      const timestamp = new Date().getTime()
+      const baseSlug = data.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+      const url_slug = `${baseSlug}-${timestamp}`
+
+      const { data: newInvitation, error } = await supabase
         .from("invitations")
-        .insert({
-          ...values,
-          user_id: userData.user?.id,
-          url_slug: `${values.title.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`,
-        })
+        .insert([
+          {
+            title: data.title,
+            description: data.description || null,
+            event_date: new Date(data.event_date).toISOString(),
+            location: data.location,
+            template_id: data.template_id,
+            user_id: user.id,
+            url_slug,
+          },
+        ])
         .select()
+        .single()
 
-      if (error) throw error
-      return data[0]
+      if (error) {
+        console.error("Error creating invitation:", error)
+        throw new Error(error.message)
+      }
+
+      return newInvitation
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["invitations"] })
       toast({
-        title: "Success",
-        description: "Invitation created successfully!",
+        title: "¡Invitación creada!",
+        description: "Tu invitación ha sido creada exitosamente.",
       })
       navigate("/dashboard")
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
-        description: `Failed to create invitation: ${error.message}`,
+        description: `Error al crear la invitación: ${error.message}`,
         variant: "destructive",
       })
+      setIsSubmitting(false)
     },
   })
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true)
-    createInvitationMutation.mutate(values)
+  const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true)
+    createInvitation.mutate(data)
   }
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto py-10 px-4">
       <Card>
         <CardHeader>
-          <CardTitle>Create New Invitation</CardTitle>
+          <CardTitle>Crear Nueva Invitación</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel>Título del Evento</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter event title" {...field} />
+                      <Input placeholder="Ej: Mi Fiesta de Cumpleaños" {...field} />
                     </FormControl>
-                    <FormDescription>This will be the main title of your invitation.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>Descripción</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Enter event description" className="resize-none" {...field} />
+                      <Textarea placeholder="Describe tu evento..." className="min-h-[100px]" {...field} />
                     </FormControl>
-                    <FormDescription>Provide more details about your event (optional).</FormDescription>
+                    <FormDescription>Añade detalles importantes sobre tu evento</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="event_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Event Date</FormLabel>
+                    <FormLabel>Fecha y Hora</FormLabel>
                     <FormControl>
                       <Input type="datetime-local" {...field} />
                     </FormControl>
@@ -131,29 +157,31 @@ const CreateInvitation = () => {
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="location"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Location</FormLabel>
+                    <FormLabel>Ubicación</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter event location" {...field} />
+                      <Input placeholder="Dirección del evento" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="template_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Template</FormLabel>
+                    <FormLabel>Plantilla</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a template" />
+                          <SelectValue placeholder="Selecciona una plantilla" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -164,26 +192,24 @@ const CreateInvitation = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormDescription>Choose a template for your invitation.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              <div className="flex gap-4 justify-end">
+                <Button type="button" variant="outline" onClick={() => navigate("/dashboard")}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Creando..." : "Crear Invitación"}
+                </Button>
+              </div>
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button variant="outline" onClick={() => navigate("/dashboard")}>
-            Cancel
-          </Button>
-          <Button type="submit" onClick={form.handleSubmit(onSubmit)} disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create Invitation"}
-          </Button>
-        </CardFooter>
       </Card>
     </div>
   )
 }
-
-export default CreateInvitation
 

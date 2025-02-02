@@ -7,9 +7,11 @@ import Login from "@/pages/Login"
 import Register from "@/pages/Register"
 import Dashboard from "@/pages/Dashboard"
 import CreateInvitation from "@/pages/CreateInvitation"
+import EditInvitation from "@/pages/EditInvitation"
+import InvitationView from "@/pages/InvitationView"
+import InvitationDetails from "@/pages/InvitationDetails"
 import NotFound from "@/pages/NotFound"
 
-// Create a client
 const queryClient = new QueryClient()
 
 function App() {
@@ -23,6 +25,9 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/create-invitation" element={<CreateInvitation />} />
+            <Route path="/edit-invitation/:id" element={<EditInvitation />} />
+            <Route path="/invitation/:id" element={<InvitationDetails />} />
+            <Route path="/i/:slug" element={<InvitationView />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />

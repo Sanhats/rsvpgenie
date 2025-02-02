@@ -10,16 +10,6 @@ import { InvitationCard } from "@/components/InvitationCard"
 
 type Invitation = Tables<"invitations">
 
-const fetchInvitations = async (): Promise<Invitation[]> => {
-  const { data, error } = await supabase.from("invitations").select("*").order("created_at", { ascending: false })
-
-  if (error) {
-    throw error
-  }
-
-  return data as Invitation[]
-}
-
 const Dashboard = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -38,28 +28,27 @@ const Dashboard = () => {
   }, [navigate])
 
   // Fetch invitations
-  const {
-    data: invitations,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: invitations, isLoading } = useQuery({
     queryKey: ["invitations"],
-    queryFn: fetchInvitations,
-  })
+    queryFn: async () => {
+      const { data, error } = await supabase.from("invitations").select("*").order("created_at", { ascending: false })
 
-  useEffect(() => {
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Could not load invitations",
-        variant: "destructive",
-      })
-    }
-  }, [error, toast])
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Could not load invitations",
+          variant: "destructive",
+        })
+        throw error
+      }
+
+      return data as Invitation[]
+    },
+  })
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-primary-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-primary-50">
         <div className="text-lg text-gray-600">Loading your invitations...</div>
       </div>
     )
@@ -70,7 +59,7 @@ const Dashboard = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">My Invitations</h1>
-          <Button onClick={() => navigate("/templates")} className="bg-primary hover:bg-primary/90 text-white">
+          <Button onClick={() => navigate("/create-invitation")} className="bg-primary hover:bg-primary/90 text-white">
             <PlusCircle className="mr-2 h-5 w-5" />
             Create New Invitation
           </Button>
@@ -83,11 +72,11 @@ const Dashboard = () => {
               You haven't created any invitations yet. Start by creating your first one!
             </p>
             <Button
-              onClick={() => navigate("/templates")}
+              onClick={() => navigate("/create-invitation")}
               variant="outline"
               className="border-primary text-primary hover:bg-primary-50"
             >
-              Choose a Template
+              Create Your First Invitation
             </Button>
           </div>
         ) : (
