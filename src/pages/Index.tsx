@@ -1,109 +1,60 @@
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom"
+import { Button } from "@/components/ui/button"
+import { useAuth } from "@/contexts/AuthContext"
 
-const Index = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
+export default function Index() {
+  const { user } = useAuth()
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-primary-50">
-      <div className="container mx-auto px-4">
-        <nav className="py-6 flex justify-between items-center">
-          <div className="text-2xl font-bold text-primary-600">invita.me</div>
-          <div className="space-x-4">
-            {user ? (
-              <Button
-                className="bg-primary-600 hover:bg-primary-700 text-white"
-                onClick={() => navigate("/dashboard")}
-              >
-                Mi Dashboard
-              </Button>
-            ) : (
-              <>
-                <Button
-                  variant="ghost"
-                  className="text-primary-600 hover:text-primary-700"
-                  onClick={() => navigate("/login")}
-                >
-                  Iniciar Sesión
-                </Button>
-                <Button
-                  className="bg-primary-600 hover:bg-primary-700 text-white"
-                  onClick={() => navigate("/register")}
-                >
-                  Crear Cuenta
-                </Button>
-              </>
-            )}
-          </div>
-        </nav>
-
-        <main className="py-20">
-          <div className="max-w-3xl mx-auto text-center animate-fadeIn">
-            <h1 className="text-5xl font-bold text-gray-900 mb-6">
-              Crea Invitaciones Digitales Hermosas
-            </h1>
-            <p className="text-xl text-gray-600 mb-8">
-              Diseña y comparte invitaciones digitales para cualquier ocasión. 
-              Gestiona las confirmaciones de asistencia sin complicaciones.
-            </p>
-            <div className="space-x-4">
-              <Button
-                size="lg"
-                className="bg-primary-600 hover:bg-primary-700 text-white animate-slideUp"
-                onClick={() => navigate(user ? "/create-invitation" : "/register")}
-              >
-                {user ? "Crear Nueva Invitación" : "Crear Mi Primera Invitación"}
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-primary-600 text-primary-600 hover:bg-primary-50 animate-slideUp"
-                onClick={() => navigate("/templates")}
-              >
-                Ver Plantillas
-              </Button>
+    <div className="relative overflow-hidden bg-white">
+      <div className="mx-auto max-w-7xl">
+        <div className="relative z-10 bg-white pb-8 sm:pb-16 md:pb-20 lg:w-full lg:max-w-2xl lg:pb-28 xl:pb-32">
+          <main className="mx-auto mt-10 max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
+            <div className="sm:text-center lg:text-left">
+              <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
+                <span className="block xl:inline">Crea invitaciones</span>{" "}
+                <span className="block text-indigo-600 xl:inline">únicas y memorables</span>
+              </h1>
+              <p className="mt-3 text-base text-gray-500 sm:mx-auto sm:mt-5 sm:max-w-xl sm:text-lg md:mt-5 md:text-xl lg:mx-0">
+                Diseña, personaliza y comparte tus invitaciones para cualquier ocasión. Gestiona fácilmente las
+                respuestas de tus invitados y haz que tu evento sea inolvidable.
+              </p>
+              <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
+                {user ? (
+                  <div className="rounded-md shadow">
+                    <Link to="/dashboard">
+                      <Button size="lg">Ir al Dashboard</Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    <div className="rounded-md shadow">
+                      <Link to="/register">
+                        <Button size="lg">Regístrate Gratis</Button>
+                      </Link>
+                    </div>
+                    <div className="mt-3 sm:mt-0 sm:ml-3">
+                      <Link to="/login">
+                        <Button variant="outline" size="lg">
+                          Iniciar Sesión
+                        </Button>
+                      </Link>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-
-          <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <FeatureCard
-              title="Fácil de Crear"
-              description="Diseña tu invitación en minutos con nuestro editor intuitivo"
-              icon="✨"
-            />
-            <FeatureCard
-              title="Gestión de RSVPs"
-              description="Administra tu lista de invitados y rastrea confirmaciones en tiempo real"
-              icon="📝"
-            />
-            <FeatureCard
-              title="Comparte al Instante"
-              description="Comparte tu invitación por WhatsApp, email o link personalizado"
-              icon="🚀"
-            />
-          </div>
-        </main>
+          </main>
+        </div>
+      </div>
+      <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
+        <img
+          className="h-56 w-full object-cover sm:h-72 md:h-96 lg:h-full lg:w-full"
+          src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80"
+          alt="Celebración de evento"
+        />
       </div>
     </div>
-  );
-};
+  )
+}
 
-const FeatureCard = ({
-  title,
-  description,
-  icon,
-}: {
-  title: string;
-  description: string;
-  icon: string;
-}) => (
-  <div className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 animate-slideUp">
-    <div className="text-4xl mb-4">{icon}</div>
-    <h3 className="text-xl font-semibold mb-2 text-gray-900">{title}</h3>
-    <p className="text-gray-600">{description}</p>
-  </div>
-);
-
-export default Index;
