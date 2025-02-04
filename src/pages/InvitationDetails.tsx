@@ -1,14 +1,15 @@
-import { useParams } from "react-router-dom"
+import { useParams, Link } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import { ElegantTemplate } from "@/components/templates/ElegantTemplate"
 import { ModernTemplate } from "@/components/templates/ModernTemplate"
 import { FunTemplate } from "@/components/templates/FunTemplate"
-import { RSVPResponses } from "@/components/RSVPResponses"
+import { GuestForm } from "@/components/GuestForm"
+import { GuestGrid } from "@/components/GuestGrid"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Share2 } from "lucide-react"
+import { Share2, Edit } from "lucide-react"
 
 export default function InvitationDetails() {
   const { id } = useParams<{ id: string }>()
@@ -59,10 +60,18 @@ export default function InvitationDetails() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Detalles de la Invitación</span>
-            <Button onClick={shareInvitation}>
-              <Share2 className="mr-2 h-4 w-4" />
-              Compartir
-            </Button>
+            <div className="space-x-2">
+              <Button onClick={shareInvitation}>
+                <Share2 className="mr-2 h-4 w-4" />
+                Compartir
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to={`/edit-invitation/${invitation.id}`}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Editar
+                </Link>
+              </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -72,7 +81,14 @@ export default function InvitationDetails() {
               <TemplateComponent {...invitation} />
             </div>
           </div>
-          <RSVPResponses invitationId={invitation.id} />
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">Añadir Invitado</h2>
+            <GuestForm invitationId={invitation.id} />
+          </div>
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">Lista de Invitados</h2>
+            <GuestGrid invitationId={invitation.id} />
+          </div>
         </CardContent>
       </Card>
     </div>
