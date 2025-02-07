@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -35,7 +37,7 @@ export function GuestForm({ invitationId }: GuestFormProps) {
 
   const addGuest = useMutation({
     mutationFn: async (data: GuestFormData) => {
-      const { error } = await supabase.from("guests").insert([
+      const { error } = await supabase.from("invitation_queue").insert([
         {
           invitation_id: invitationId,
           full_name: data.full_name,
@@ -47,10 +49,10 @@ export function GuestForm({ invitationId }: GuestFormProps) {
       if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(["guests", invitationId])
+      queryClient.invalidateQueries(["pending_guests", invitationId])
       toast({
         title: "Invitado añadido",
-        description: "El invitado ha sido añadido correctamente.",
+        description: "El invitado ha sido añadido a la cola de invitaciones.",
       })
       form.reset()
     },
