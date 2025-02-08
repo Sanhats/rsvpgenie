@@ -18,7 +18,7 @@ const SendInvitationsButton: React.FC<SendInvitationsButtonProps> = ({ invitatio
 
   const sendInvitations = useMutation({
     mutationFn: async () => {
-      // Obtener invitados pendientes
+      // Verificar si hay invitaciones pendientes
       const { data: pendingGuests, error: fetchError } = await supabase
         .from("invitation_queue")
         .select("*")
@@ -31,24 +31,27 @@ const SendInvitationsButton: React.FC<SendInvitationsButtonProps> = ({ invitatio
         throw new Error("No hay invitaciones pendientes para enviar")
       }
 
-      // Aquí iría la lógica para enviar las invitaciones
-      // Por ejemplo, enviar SMS o correos electrónicos a los invitados
+      // Llamar al endpoint del bot de WhatsApp para enviar invitaciones
+      const response = await fetch(`${import.meta.env.VITE_BOT_API_URL}/api/invitations/send-pending`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ invitationId }),
+      })
 
-      // Actualizar el estado de los invitados a 'sent'
-      const { error: updateError } = await supabase
-        .from("invitation_queue")
-        .update({ status: "sent" })
-        .eq("invitation_id", invitationId)
-        .eq("status", "pending")
+      if (!response.ok) {
+        throw new Error("Failed to send invitations through WhatsApp bot")
+      }
 
-      if (updateError) throw updateError
+      const result = await response.json()
 
-      return { success: true, message: "Invitaciones enviadas correctamente" }
+      return result
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Éxito",
-        description: "Las invitaciones pendientes han sido enviadas.",
+        description: data.message || "Las invitaciones pendientes han sido enviadas.",
       })
       queryClient.invalidateQueries(["pending_guests", invitationId])
     },
